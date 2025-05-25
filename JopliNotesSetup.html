@@ -1,0 +1,115 @@
+<head>
+    <meta charset="utf-8"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <title>Jopli Editor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      /* padding: 2em;*/
+      background: #f9f9f9ea;
+    }
+    #loginDiv {
+      /* border: 1px solid #797676; */
+      /* padding: 1em;
+      /*background: white;*/
+      width: 170px;
+      margin-left: auto;
+      margin-right: auto; 
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+    #loginTitle {
+      text-align: center; 
+      font-size: 26px;
+      padding-top: 40px;
+      padding-bottom: 30px;
+    }
+    #loginInput {
+      font-size: 16px;
+      text-align: left;
+    }
+    #loginButton {
+      font-size: 16px;
+      margin-top: 5px;
+      margin-right: 15px;
+      width: 70px;
+
+    }
+    #setupButton {
+      font-size: 16px;
+      margin-top: 5px;
+      margin-left: 15px;
+      width: 70px;
+    }
+    h1 {
+      margin: 0.5em 0;
+    }
+
+    p {
+      margin: 0.5em 0;
+    }
+
+    #loginRes {
+      display: block;
+      text-align: center;
+      color: #713232;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="loginDiv">
+	<p id="loginTitle">Setup User</p>
+	<p id="loginInput">Username<br>
+	<input id="username"><br>
+	Password<br>
+	<input type="password" id="password">
+    Confirm Password<br>
+    <input type="password" id="confirmPassword"></p>
+	<button id="setupButton">Setup</button>
+</div>
+	<span id="loginRes"></span>
+
+	<script type="text/javascript">
+        document.getElementById("username").focus();
+
+		$(function(){
+			// Ajax button click
+			$('#loginButton').on('click',function(){
+        if (document.getElementById("password").value == document.getElementById("confirmPassword").value ){
+          document.getElementById('loginRes').innerHTML = "\'<i>error: Passwords are not the same</i>\'";
+          return
+        }
+
+            $.ajax({
+                url:'./JopliNotesSetup.php',
+                type:'POST',
+                data:{
+                    'username':$('#username').val(),
+                    'password':$('#password').val(),
+                }
+            })
+            // Ajaxリクエストが成功した時発動
+            .done( (data) => {
+                //console.log(data);
+                //document.getElementById('loginRes').innerHTML = data;
+                if (data.success) {
+                    document.getElementById('loginRes').innerHTML = data.message;
+                    window.location ="JopliNotesLogin.html";
+                    }
+                if (!data.success) {
+                    document.getElementById('loginRes').innerHTML = data.message;
+                    }
+                
+            })
+            // Ajaxリクエストが失敗した時発動
+            .fail( (data) => {
+                console.log("fail");
+            })
+			});
+		});
+    </script>
+
+	
+</body>
