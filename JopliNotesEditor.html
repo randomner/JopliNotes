@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jopli Editor</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding-bottom: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+    .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      padding-top: 10px;
+    }
+
+    #info {
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding-top: 5px;
+      padding-left: 5px;
+    }
+    
+    #username {
+      font-size: small;
+    }
+    #notesTitle {
+      font-size: large;
+    }
+
+    #editor {
+      border: 1px solid #9d9c9c;
+      padding: 1em;
+      background: white;
+      min-height: 700px;
+      width: 800px;
+      margin-left: auto;
+      margin-right: auto; 
+      line-height: 1.6;
+    }
+
+    [contenteditable]:focus {
+      outline: none; /* 移除默认的聚焦边框 */
+      border: none;  /* 如果你之前设置了 border，可以在这里取消 */
+      box-shadow: none; /* 有的浏览器会用 box-shadow 显示聚焦 */
+    }
+
+    h1 {
+      margin: 0.5em 0;
+    }
+    p {
+      margin: 0.5em 0;
+    }
+    #control-bar {
+      position: fixed;
+      text-align: center;
+      font-size: 16px;
+      line-height: 16px;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #cfcece;
+      opacity: 50%;;
+      color: #000000;
+      padding: auto 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 5px rgba(58, 57, 57, 0.3);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div id="info">
+    <!--  <p id="username">Username</p>
+      <p id="notesTitle">notesTitle</p>
+      <div id="notesIndex">
+      <li>title1</li>
+      </div> -->
+    </div>
+
+    <div id="editor" contenteditable="true"></div>
+
+  </div>
+  
+  <div id="control-bar">
+    Alt+S to save Note. 5 secs autosave.
+  </div>
+
+	<script type="text/javascript"> //传送数据
+    $(document).ready(function() {
+      loadNote();
+    });
+		
+    function loadNote(){
+      $.ajax({
+        url:'./JopliNotesEditorLoad.php',
+        type:'POST',
+        data:{
+         // 'username':$('#username').val(),
+        }
+      })
+      // Ajaxリクエストが成功した時発動
+      .done( (data) => {
+        //console.log(data);
+        //document.getElementById('loginRes').innerHTML = data;
+        if (data.success) {
+          if (data.success) {
+            $('#editor').html(data.content); // jQuery 写法也更简洁
+          }
+          }
+          if (!data.success) {
+            $('#editor').text(data.message); // jQuery 写法也更简洁
+          }
+        
+      })
+      // Ajaxリクエストが失敗した時発動
+.fail((jqXHR, textStatus, errorThrown) => {
+  console.error("请求失败：", textStatus);
+  console.error("状态码：", jqXHR.status);
+  console.error("响应文本：", jqXHR.responseText);
+  console.error("错误信息：", errorThrown);
+})
+    };  
+
+
+    //接下来是保存逻辑
+    $(document).on('keydown', function(e) {
+      if (e.altKey && e.keyCode === 83) {
+        e.preventDefault(); // 阻止默认行为
+        saveNote();
+      }
+    });
+
+    setInterval(function() {
+      saveNote();
+    }, 5000); // 每 5000 毫秒（即 5 秒）执行一次
+
+    function saveNote(){
+      $.ajax({
+        url:'./JopliNotesEditorSave.php',
+        type:'POST',
+        data:{
+          'noteContent':$('#editor').html(),
+        }
+      })
+      // Ajaxリクエストが成功した時発動
+      .done( (data) => {
+      })
+      // Ajaxリクエストが失敗した時発動
+      .fail( (data) => {
+        console.log("fail");
+      })
+    };  
+
+    </script>
+
+
+    <script>
+      const editor = document.getElementById("editor");
+      editor.focus();
+
+      editor.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();// 阻止默认回车换行
+            }
+      });   
+
+      /* 强制保持 contenteditable
+      const observerContenteditable = new MutationObserver(() => {
+        if (!editor.isContentEditable) {
+          editor.contentEditable = "true";
+        }
+      });
+      observerContenteditable.observe(editor, { attributes: true, attributeFilter: ['contenteditable'] });*/
+      /*editor.addEventListener('blur', () => {
+        setTimeout(() => editor.focus(), 0); // 模拟“始终保持激活”
+      }); */
+
+      // 创建 <p> 元素
+      const p = document.createElement('p');
+      p.innerHTML = '\u200B';  // 零宽空格，确保光标可定位
+      editor.appendChild(p);
+
+      // 设置光标到 <p> 中
+      const range = document.createRange();
+      range.selectNodeContents(p);
+      range.collapse(true); // 光标在开头（false 为末尾）
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+
+      editor.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+
+          const selection = window.getSelection();
+          const range = selection.getRangeAt(0);
+          const node = range.startContainer;
+
+          // 若光标在文本节点内，node 是文本；否则可能是元素节点
+          const parent = node.parentNode;
+
+          // 获取当前段落的完整文本（有可能不在纯文本节点）
+          const line = parent.textContent;
+          const offset = range.startOffset;
+
+          // 拆分：获取光标前后的内容
+          const before = line.slice(0, offset);
+          const after = line.slice(offset);
+
+          parent.innerHTML = before;
+          // 实现替换#，##，###语法
+          if (before.trim().startsWith('###')) {
+          parent.innerHTML = `<h3>${before.replace(/^###/, '')}</h3>`;
+          } else if (before.trim().startsWith('##')) {
+          parent.innerHTML = `<h2>${before.replace(/^##/, '')}</h2>`;
+          } else if (before.trim().startsWith('#')) {
+          parent.innerHTML = `<h1>${before.replace(/^#/, '')}</h1>`;
+          }
+
+          // 创建新段落，并将光标后内容移入其中
+          const newPara = document.createElement('p');
+          if (after.length > 0) {
+          newPara.textContent = after;
+          } else {
+          newPara.textContent = '\u200B'; // 零宽空格，确保光标可定位
+          }
+
+          // 插入新段落
+
+          parent.parentNode.insertBefore(newPara, parent.nextSibling);
+
+          // 将光标放在新段落开头
+          const newRange = document.createRange();
+          newRange.selectNodeContents(newPara);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+      }
+      });
+      </script>
+
+<!-- //这是行内替换
+      <script>
+      editor.addEventListener('input', () => {
+        const selection = window.getSelection(); // 获取当前的文字选中（光标）状态
+        if (!selection.rangeCount) return; // 如果没有选区（例如页面刚加载），就直接返回
+
+        const range = selection.getRangeAt(0); // 获取当前的选区范围（光标位置）
+        const node = range.startContainer; // 获取光标所在的“节点”（一般是文本节点）
+
+        if (node.nodeType === 3) { // 如果这个节点是文本类型（text node）
+          const text = node.textContent; // 获取它的文本内容
+
+          // 查找是否有类似 **加粗内容** 的格式，正则解释如下：
+          // \*\*：两个星号
+          // (.+?)：尽可能少地匹配中间的内容（也就是加粗的文字）
+          // \*\*：再来两个星号
+          const match = /\*\*(.+?)\*\*/.exec(text);
+
+          if (match) {
+          const boldText = match[1]; // 提取出要加粗的文字
+          const before = text.slice(0, match.index); // 星号前面的文本
+          const after = text.slice(match.index + match[0].length); // 星号后面的文本
+          const parent = node.parentNode; // 获取当前文本节点的父元素（通常是 <p>）
+
+          // 创建一个文档片段，用来放置我们替换后的结构
+          const fragment = document.createDocumentFragment();
+
+          if (before) {
+              // 如果星号前面还有文本，就先加进去
+              fragment.appendChild(document.createTextNode(before));
+          }
+
+          // 创建 <strong> 元素表示加粗，并放入中间的内容
+          //const strong = document.createElement('strong');
+          //strong.textContent = boldText;
+          const strong = match[0].replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+          fragment.appendChild(strong);
+
+          // 把后面的普通文字也加进去
+          const afterNode = document.createTextNode(after);
+          fragment.appendChild(afterNode);
+
+          // 用整个片段替换原来的那个文本节点
+          parent.replaceChild(fragment, node);
+
+          // 重新设置光标到加粗内容后面
+          const newRange = document.createRange();
+          newRange.setStartAfter(strong); // 把光标移到 <strong> 之后
+          newRange.collapse(true); // 折叠光标（不选中内容）
+          selection.removeAllRanges(); // 清除旧的光标位置
+          selection.addRange(newRange); // 应用新的光标位置
+          }
+      }
+      });
+      
+    </script>-->
+</body>
+</html>
