@@ -7,7 +7,7 @@ $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
 
 // 数据库连接
-$con = mysqli_connect("localhost", "root", "", "joplinotes");
+$con = mysqli_connect("localhost", "root", "randomner", "joplinotes");
 if (!$con) {
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
     exit;

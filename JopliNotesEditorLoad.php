@@ -8,7 +8,7 @@ $user_id = $_SESSION["user_id"];
  //echo json_encode(['success' => true, 'message' => $user_id ]);
 
 // 数据库连接
-$con = mysqli_connect("localhost", "root", "", "joplinotes");
+$con = mysqli_connect("localhost", "root", "randomner", "joplinotes");
 if (!$con) {
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);
     exit;
