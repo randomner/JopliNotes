@@ -35,5 +35,6 @@ $maxUserID = $maxUserID + 1;
 $newUser = $con->prepare("INSERT INTO users (user_id, username, password_hash) VALUES (?, ?, ?)");
 $newUser->bind_param("iss", $maxUserID, $username, $password);
 $newUser->execute();
+echo json_encode(['success' => true, 'message' => '\'Your account has been set up\'']);
 exit;
 ?>

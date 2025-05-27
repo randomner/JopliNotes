@@ -1,7 +1,9 @@
 <head>
     <meta charset="utf-8"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-      <title>Jopli Editor</title>
+    <title>Jopli Editor</title>
+  
+
   <style>
     body {
       font-family: sans-serif;
@@ -100,7 +102,9 @@
 					//document.getElementById('loginRes').innerHTML = data;
 					if (data.success) {
             document.getElementById('loginRes').innerHTML = data.message;
-            window.location ="JopliNotesEditor.html";
+            setTimeout(() => {
+                window.location = "JopliNotesEditor.html";
+            }, 1000);
 					  }
           if (!data.success) {
             document.getElementById('loginRes').innerHTML = data.message;
